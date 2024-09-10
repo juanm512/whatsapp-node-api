@@ -13,7 +13,8 @@ const { MessageMedia, Location } = require("whatsapp-web.js");
 // Función para validar el formato del número de teléfono
 function isValidPhone(phone) {
 	// Código de área (2 a 4 dígitos) seguido de un número de 6 dígitos, sin guiones ni espacios
-	const phoneRegex = /^\d{1,3}9\d{2,4}{6}$/;
+	const phoneRegex = /^\d{1,3}9\d{2,4}\d{6}$/;
+
 	return phoneRegex.test(phone);
 }
 
