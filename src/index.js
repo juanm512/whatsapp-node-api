@@ -100,7 +100,7 @@ global.authed = false;
 		app.use("/group", groupRoute);
 		app.use("/contact", contactRoute);
 
-		app.listen(port, () => {
+		app.listen(port, "0.0.0.0", () => {
 			console.log(`Server Running Live on Port : ${port}`);
 		});
 	} catch (err) {
