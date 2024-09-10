@@ -32,6 +32,8 @@ router.post("/sendmessage/:phone", async (req, res) => {
 		});
 	}
 
+	console.log(phone, message);
+
 	try {
 		const response = await global.client.sendMessage(`${phone}@c.us`, message);
 		if (response.id.fromMe) {
