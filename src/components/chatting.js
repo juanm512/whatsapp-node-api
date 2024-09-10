@@ -10,23 +10,130 @@ const { MessageMedia, Location } = require("whatsapp-web.js");
 // 	});
 // };
 
+// Función para validar el formato del número de teléfono
+function isValidPhone(phone) {
+	// Código de área (2 a 4 dígitos) seguido de un número de 6 dígitos, sin guiones ni espacios
+	const phoneRegex = /^\d{1,3}9\d{2,4}{6}$/;
+	return phoneRegex.test(phone);
+}
+
 router.post("/sendmessage/:phone", async (req, res) => {
 	const phone = req.params.phone;
 	const message = req.body.message;
 
-	if (phone === undefined || message === undefined) {
-		res.send({
-			status: "error",
-			message: "please enter valid phone and message",
+	if (!isValidPhone(phone) || !message) {
+		return res.status(400).json({
+			success: false,
+			status: "invalid_input",
+			data: null,
+			error:
+				"Please enter a valid phone number: (1-2) caracteres codigo pais + numero 9 + (2-4) codigo area + (6) numero real ) and a message",
 		});
-	} else {
-		global.client.sendMessage(`${phone}@c.us`, message).then((response) => {
-			if (response.id.fromMe) {
-				res.send({
-					status: "success",
-					message: `Message successfully sent to ${phone}`,
-				});
-			}
+	}
+
+	try {
+		const response = await global.client.sendMessage(`${phone}@c.us`, message);
+		if (response.id.fromMe) {
+			return res.json({
+				success: true,
+				status: "message_sent",
+				data: { phone, message },
+				error: null,
+			});
+		}
+	} catch (error) {
+		console.error("Error sending message:", error);
+		return res.status(500).json({
+			success: false,
+			status: "send_message_error",
+			data: null,
+			error: "Error sending message",
+		});
+	}
+});
+
+router.post("/sendlocation/:phone", async (req, res) => {
+	const phone = req.params.phone;
+	const { latitude, longitude, description = "" } = req.body;
+
+	if (!isValidPhone(phone) || !latitude || !longitude) {
+		return res.status(400).json({
+			success: false,
+			status: "invalid_input",
+			data: null,
+			error: "Please enter a valid phone number, latitude, and longitude",
+		});
+	}
+
+	try {
+		const loc = new Location(latitude, longitude, description);
+		const response = await global.client.sendMessage(`${phone}@c.us`, loc);
+		if (response.id.fromMe) {
+			return res.json({
+				success: true,
+				status: "location_sent",
+				data: { phone, location: { latitude, longitude, description } },
+				error: null,
+			});
+		}
+	} catch (error) {
+		console.error("Error sending location:", error);
+		return res.status(500).json({
+			success: false,
+			status: "send_location_error",
+			data: null,
+			error: "Error sending location",
+		});
+	}
+});
+
+router.get("/getchatbyid/:phone", async (req, res) => {
+	const phone = req.params.phone;
+
+	if (!isValidPhone(phone)) {
+		return res.status(400).json({
+			success: false,
+			status: "invalid_input",
+			data: null,
+			error: "Please enter a valid phone number",
+		});
+	}
+
+	try {
+		const chat = await global.client.getChatById(`${phone}@c.us`);
+		return res.json({
+			success: true,
+			status: "chat_fetched",
+			data: chat,
+			error: null,
+		});
+	} catch (error) {
+		console.error("Error fetching chat:", error);
+		return res.status(500).json({
+			success: false,
+			status: "get_chat_error",
+			data: null,
+			error: "Error fetching chat",
+		});
+	}
+});
+
+router.get("/getchats", async (req, res) => {
+	try {
+		const chats = await global.client.getChats();
+		return res.json({
+			success: true,
+			status: "chats_fetched",
+			data: chats,
+			error: null,
+		});
+	} catch (error) {
+		console.error("Error fetching chats:", error);
+		return res.status(500).json({
+			success: false,
+			status: "get_chats_error",
+			data: null,
+			error: "Error fetching chats",
 		});
 	}
 });
@@ -136,61 +243,5 @@ router.post("/sendmessage/:phone", async (req, res) => {
 // 		}
 // 	}
 // });
-
-router.post("/sendlocation/:phone", async (req, res) => {
-	const phone = req.params.phone;
-	const latitude = req.body.latitude;
-	const longitude = req.body.longitude;
-	const desc = req.body.description;
-
-	if (
-		phone === undefined ||
-		latitude === undefined ||
-		longitude === undefined
-	) {
-		res.send({
-			status: "error",
-			message: "please enter valid phone, latitude and longitude",
-		});
-	} else {
-		const loc = new Location(latitude, longitude, desc || "");
-		global.client.sendMessage(`${phone}@c.us`, loc).then((response) => {
-			if (response.id.fromMe) {
-				res.send({
-					status: "success",
-					message: `MediaMessage successfully sent to ${phone}`,
-				});
-			}
-		});
-	}
-});
-
-router.get("/getchatbyid/:phone", async (req, res) => {
-	const phone = req.params.phone;
-	if (phone === undefined) {
-		res.send({ status: "error", message: "please enter valid phone number" });
-	} else {
-		global.client
-			.getChatById(`${phone}@c.us`)
-			.then((chat) => {
-				res.send({ status: "success", message: chat });
-			})
-			.catch(() => {
-				console.error("getchaterror");
-				res.send({ status: "error", message: "getchaterror" });
-			});
-	}
-});
-
-router.get("/getchats", async (req, res) => {
-	global.client
-		.getChats()
-		.then((chats) => {
-			res.send({ status: "success", message: chats });
-		})
-		.catch(() => {
-			res.send({ status: "error", message: "getchatserror" });
-		});
-});
 
 module.exports = router;
