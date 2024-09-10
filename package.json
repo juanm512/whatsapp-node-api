@@ -12,7 +12,12 @@
 		"type": "git",
 		"url": "git+https://github.com/pranavms13/whatsapp-node-api.git"
 	},
-	"keywords": ["whatsapp-api", "whatsapp", "whatsapp-web", "whatsapp"],
+	"keywords": [
+		"whatsapp-api",
+		"whatsapp",
+		"whatsapp-web",
+		"whatsapp"
+	],
 	"author": "Pranav M S",
 	"license": "CC-BY-NC",
 	"bugs": {
@@ -23,7 +28,6 @@
 		"body-parser": "^1.19.2",
 		"child_process": "^1.0.2",
 		"express": "^4.17.3",
-		"qrcode": "^1.5.3",
 		"whatsapp-web.js": "github:pedroslopez/whatsapp-web.js#webpack-exodus"
 	}
 }

@@ -1,10 +1,6 @@
 const express = require("express");
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const bodyParser = require("body-parser");
-const qrcode = require("qrcode");
-// const fs = require("fs");
-// const axios = require("axios");
-// const shelljs = require("shelljs");
 
 const chatRoute = require("./components/chatting");
 const groupRoute = require("./components/group");
@@ -44,13 +40,7 @@ global.authed = false;
 
 		client.on("qr", (qr) => {
 			console.log("Solicitud de qr!", qr);
-			// fs.writeFileSync("./components/last.qr", qr);
-			// qrcode.toString("Solicitud de qr!", { type: "terminal" }, (err, url) => {
-			// 	console.log(url);
-			// });
-			qrcode.toDataURL(qr, (err, url) => {
-				global.qr = url;
-			});
+			global.qr = qr;
 		});
 
 		client.on("loading_screen", (percent, message) => {
@@ -59,35 +49,32 @@ global.authed = false;
 
 		client.on("ready", () => {
 			console.log("Client is ready!");
+			global.qr = null;
 		});
 
 		client.on("authenticated", () => {
 			console.log("AUTH!");
-			authed = true;
 			global.qr = null;
-			// try {
-			// 	fs.unlinkSync("./components/last.qr");
-			// } catch (err) {}
+			authed = true;
 		});
 
 		client.on("auth_failure", () => {
 			console.log("AUTH Failed !");
-			process.exit();
+			global.qr = null;
+			global.authed = false;
+			// process.exit();
 		});
 
 		client.on("message", async (msg) => {
-			// if (config.webhook.enabled) {
-			// 	if (msg.hasMedia) {
-			// 		const attachmentData = await msg.downloadMedia();
-			// 		msg.attachmentData = attachmentData;
-			// 	}
-			// 	axios.post(config.webhook.path, { msg });
-			// }
+			// aca se puede hacer un webhook para que cuando se reciba un mensaje se ejecute una funcion
+			// o se puede contestar con mensajes automáticos
 			console.log("MENSAJE ENTRANTE ===>>> ", msg);
 		});
 
 		client.on("disconnected", () => {
 			console.log("disconnected");
+			global.qr = null;
+			global.authed = false;
 		});
 		global.client = client;
 
