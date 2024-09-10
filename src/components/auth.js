@@ -39,10 +39,10 @@ router.get("/getqr", async (req, res) => {
 				error: "Already Authenticated",
 			});
 		}
-		sendQr(res, mode);
+		sendQr(res);
 	} catch (error) {
 		console.error("Error fetching QR state:", error);
-		sendQr(res, mode);
+		sendQr(res);
 	}
 });
 
